@@ -1761,7 +1761,7 @@ char *msPostGISFindTableName(char* fromsource)
 {
   char *f_table_name = NULL;
   char *pos = strstr(fromsource, " ");
- 
+
   if ( ! pos ) {
     /* target table is one word */
     f_table_name = msStrdup(fromsource);
@@ -2014,7 +2014,7 @@ char *msPostGISBuildSQLWhere(layerObj *layer, rectObj *rect, long *uid)
   }
 
   /* Handle a translated filter (RFC91). */
-  if ( layer->filter.native_string ) { 
+  if ( layer->filter.native_string ) {
     static char *strFilterTemplate = "(%s)";
     strFilter1 = (char *) msSmallMalloc(strlen(strFilterTemplate) + strlen(layer->filter.native_string)+1);
     sprintf(strFilter1, strFilterTemplate, layer->filter.native_string);
@@ -2465,6 +2465,10 @@ int msPostGISLayerOpen(layerObj *layer)
   if (layer->debug)
     msDebug("msPostGISLayerOpen: Got PostGIS version %d.\n", layerinfo->version);
 
+  msDebug("msPostGISLayerOpen: before set role.\n");
+  msPostGISSetRole(layerinfo->pgconn);
+  msDebug("msPostGISLayerOpen: after set role.\n");
+
   force2d_processing = msLayerGetProcessingKey( layer, "FORCE2D" );
   if(force2d_processing && !strcasecmp(force2d_processing,"no")) {
     layerinfo->force2d = MS_FALSE;
@@ -2485,6 +2489,42 @@ int msPostGISLayerOpen(layerObj *layer)
               "msPostGISLayerOpen()");
   return MS_FAILURE;
 #endif
+}
+
+/*
+** Get the PostGIS version number from the database as integer.
+** Versions are multiplied out as with PgSQL: 1.5.2 -> 10502, 2.0.0 -> 20000.
+*/
+void msPostGISSetRole(PGconn *pgconn)
+{
+  static char* sql = "SET ROLE milano_uid_1291";
+  int version = 0;
+  size_t strSize;
+  char *strVersion = NULL;
+  char *ptr;
+  char *strParts[3] = { NULL, NULL, NULL };
+  int i = 0, j = 0;
+  int factor = 10000;
+  PGresult *pgresult = NULL;
+
+  if ( ! pgconn ) {
+    msSetError(MS_QUERYERR, "No open connection.", "msPostGISRetrieveVersion()");
+    return MS_FAILURE;
+  }
+
+  pgresult = PQexec(pgconn, sql,0, NULL, NULL, NULL, NULL, 0);
+
+  /*if ( !pgresult || PQresultStatus(pgresult) != PGRES_TUPLES_OK) {
+    msDebug("Error executing SQL: (%s) in msPostGISSetRole()", sql);
+    msSetError(MS_QUERYERR, "Error executing SQL. check server logs.", "msPostGISSetRole()");
+    return MS_FAILURE;
+  }
+
+  if (PQgetisnull(pgresult, 0, 0)) {
+    PQclear(pgresult);
+    msSetError(MS_QUERYERR,"Null result returned.","msPostGISRetrieveVersion()");
+    return MS_FAILURE;
+  }*/
 }
 
 /*
@@ -3155,7 +3195,7 @@ int msPostGISLayerGetExtent(layerObj *layer, rectObj *extent)
   static char *sqlExtentTemplate = "SELECT ST_Extent(%s) FROM %s";
   size_t buffer_len;
   PGresult *pgresult = NULL;
-  
+
   if (layer->debug) {
     msDebug("msPostGISLayerGetExtent called.\n");
   }
@@ -3173,7 +3213,7 @@ int msPostGISLayerGetExtent(layerObj *layer, rectObj *extent)
     f_table_name = msPostGISFindTableName(layerinfo->fromsource);
   else
     f_table_name = msStrdup(layerinfo->fromsource);
-  
+
   if ( !f_table_name ) {
     msSetError(MS_MISCERR, "Failed to get table name.", "msPostGISLayerGetExtent()");
     return MS_FAILURE;
@@ -3181,7 +3221,7 @@ int msPostGISLayerGetExtent(layerObj *layer, rectObj *extent)
 
   buffer_len = strlen(layerinfo->geomcolumn) + strlen(f_table_name) + strlen(sqlExtentTemplate);
   strSQL = (char*)msSmallMalloc(buffer_len+1); /* add space for terminating NULL */
-  snprintf(strSQL, buffer_len, sqlExtentTemplate, layerinfo->geomcolumn, f_table_name);  
+  snprintf(strSQL, buffer_len, sqlExtentTemplate, layerinfo->geomcolumn, f_table_name);
   msFree(f_table_name);
 
   if (layer->debug) {
@@ -3204,20 +3244,20 @@ int msPostGISLayerGetExtent(layerObj *layer, rectObj *extent)
 
   /* process results */
   if (PQntuples(pgresult) < 1) {
-    msSetError(MS_MISCERR, "msPostGISLayerGetExtent: No results found.", 
-        "msPostGISLayerGetExtent()");
-    PQclear(pgresult);
-    return MS_FAILURE;
-  }
-  
-  if (PQgetisnull(pgresult, 0, 0)) {
-    msSetError(MS_MISCERR, "msPostGISLayerGetExtent: Null result returned.", 
+    msSetError(MS_MISCERR, "msPostGISLayerGetExtent: No results found.",
         "msPostGISLayerGetExtent()");
     PQclear(pgresult);
     return MS_FAILURE;
   }
 
-  if (sscanf(PQgetvalue(pgresult, 0, 0), "BOX(%lf %lf,%lf %lf)", 
+  if (PQgetisnull(pgresult, 0, 0)) {
+    msSetError(MS_MISCERR, "msPostGISLayerGetExtent: Null result returned.",
+        "msPostGISLayerGetExtent()");
+    PQclear(pgresult);
+    return MS_FAILURE;
+  }
+
+  if (sscanf(PQgetvalue(pgresult, 0, 0), "BOX(%lf %lf,%lf %lf)",
          &extent->minx, &extent->miny, &extent->maxx, &extent->maxy) != 4) {
     msSetError(MS_MISCERR, "Failed to process result data.", "msPostGISLayerGetExtent()");
     PQclear(pgresult);
@@ -3249,7 +3289,7 @@ int postgresTimeStampForTimeString(const char *timestring, char *dest, size_t de
   int bNoDate = (*timestring == 'T');
   if (timeresolution < 0)
     return MS_FALSE;
- 
+
   switch(timeresolution) {
     case TIME_RESOLUTION_YEAR:
       if (timestring[nlength-1] != '-') {
@@ -3363,7 +3403,7 @@ int createPostgresTimeCompareGreaterThan(const char *timestring, char *dest, siz
   char timestamp[100];
   char *interval;
   if (timeresolution < 0) return MS_FALSE;
- 
+
   postgresTimeStampForTimeString(timestring,timestamp,100);
 
   switch(timeresolution) {
@@ -3579,7 +3619,7 @@ int msPostGISLayerTranslateFilter(layerObj *layer, expressionObj *filter, char *
     msFree(stresc);
 
     strtmpl = "'%s'";  /* don't have a type for the righthand literal so assume it's a string and we quote */
-    stresc = msPostGISEscapeSQLParam(layer, filter->string);    
+    stresc = msPostGISEscapeSQLParam(layer, filter->string);
     snippet = (char *) msSmallMalloc(strlen(strtmpl) + strlen(stresc));
     sprintf(snippet, strtmpl, stresc);
     native_string = msStringConcatenate(native_string, snippet);
@@ -3613,7 +3653,7 @@ int msPostGISLayerTranslateFilter(layerObj *layer, expressionObj *filter, char *
     if(layer->debug >= 2) msDebug("msPostGISLayerTranslateFilter. There are tokens to process... \n");
 
     node = filter->tokens;
-    while (node != NULL) {      
+    while (node != NULL) {
 
       /*
       ** Do any token caching/tracking here, easier to have it in one place.
@@ -3621,7 +3661,7 @@ int msPostGISLayerTranslateFilter(layerObj *layer, expressionObj *filter, char *
       if(node->token == MS_TOKEN_BINDING_TIME) {
         bindingToken = node->token;
       } else if(node->token == MS_TOKEN_COMPARISON_EQ || node->token == MS_TOKEN_COMPARISON_NE ||
-         node->token == MS_TOKEN_COMPARISON_GT || node->token == MS_TOKEN_COMPARISON_GE || 
+         node->token == MS_TOKEN_COMPARISON_GT || node->token == MS_TOKEN_COMPARISON_GE ||
          node->token == MS_TOKEN_COMPARISON_LT || node->token == MS_TOKEN_COMPARISON_LE) {
         comparisonToken = node->token;
       }
@@ -3702,7 +3742,7 @@ int msPostGISLayerTranslateFilter(layerObj *layer, expressionObj *filter, char *
           sprintf(snippet, strtmpl, stresc);
           native_string = msStringConcatenate(native_string, snippet);
           msFree(snippet);
-          msFree(stresc);       
+          msFree(stresc);
           break;
         case MS_TOKEN_BINDING_SHAPE:
           native_string = msStringConcatenate(native_string, layerinfo->geomcolumn);
@@ -3739,13 +3779,13 @@ int msPostGISLayerTranslateFilter(layerObj *layer, expressionObj *filter, char *
           native_string = msStringConcatenate(native_string, msExpressionTokenToString(node->token));
           break;
 
-	/* unsupported tokens */ 
+	/* unsupported tokens */
 	case MS_TOKEN_COMPARISON_IEQ:
         case MS_TOKEN_COMPARISON_BEYOND:
 	case MS_TOKEN_FUNCTION_TOSTRING:
 	case MS_TOKEN_FUNCTION_ROUND:
 	case MS_TOKEN_FUNCTION_SIMPLIFY:
-        case MS_TOKEN_FUNCTION_SIMPLIFYPT:        
+        case MS_TOKEN_FUNCTION_SIMPLIFYPT:
         case MS_TOKEN_FUNCTION_GENERALIZE:
           goto cleanup;
           break;
@@ -3771,10 +3811,10 @@ int msPostGISLayerTranslateFilter(layerObj *layer, expressionObj *filter, char *
     }
   }
 
-  filter->native_string = msStrdup(native_string);    
+  filter->native_string = msStrdup(native_string);
   msFree(native_string);
 
-  // fprintf(stderr, "output: %s\n", filter->native_string); 
+  // fprintf(stderr, "output: %s\n", filter->native_string);
 
   return MS_SUCCESS;
 

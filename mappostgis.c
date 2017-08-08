@@ -2509,7 +2509,7 @@ void msPostGISSetRole(PGconn *pgconn)
 
   if ( ! pgconn ) {
     msSetError(MS_QUERYERR, "No open connection.", "msPostGISRetrieveVersion()");
-    return MS_FAILURE;
+    return;
   }
 
   pgresult = PQexec(pgconn, sql,0, NULL, NULL, NULL, NULL, 0);

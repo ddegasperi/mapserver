@@ -2333,6 +2333,42 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 
 #endif /* USE_POSTGIS */
 
+/*
+** Get the PostGIS version number from the database as integer.
+** Versions are multiplied out as with PgSQL: 1.5.2 -> 10502, 2.0.0 -> 20000.
+*/
+void msPostGISSetRole(PGconn *pgconn)
+{
+  static char* sql = "SET ROLE milano_uid_1291";
+  int version = 0;
+  size_t strSize;
+  char *strVersion = NULL;
+  char *ptr;
+  char *strParts[3] = { NULL, NULL, NULL };
+  int i = 0, j = 0;
+  int factor = 10000;
+  PGresult *pgresult = NULL;
+
+  if ( ! pgconn ) {
+    msSetError(MS_QUERYERR, "No open connection.", "msPostGISRetrieveVersion()");
+    return;
+  }
+
+  pgresult = PQexec(pgconn, sql);
+
+  /*if ( !pgresult || PQresultStatus(pgresult) != PGRES_TUPLES_OK) {
+    msDebug("Error executing SQL: (%s) in msPostGISSetRole()", sql);
+    msSetError(MS_QUERYERR, "Error executing SQL. check server logs.", "msPostGISSetRole()");
+    return MS_FAILURE;
+  }
+
+  if (PQgetisnull(pgresult, 0, 0)) {
+    PQclear(pgresult);
+    msSetError(MS_QUERYERR,"Null result returned.","msPostGISRetrieveVersion()");
+    return MS_FAILURE;
+  }*/
+}
+
 
 /*
 ** msPostGISLayerOpen()
@@ -2489,42 +2525,6 @@ int msPostGISLayerOpen(layerObj *layer)
               "msPostGISLayerOpen()");
   return MS_FAILURE;
 #endif
-}
-
-/*
-** Get the PostGIS version number from the database as integer.
-** Versions are multiplied out as with PgSQL: 1.5.2 -> 10502, 2.0.0 -> 20000.
-*/
-void msPostGISSetRole(PGconn *pgconn)
-{
-  static char* sql = "SET ROLE milano_uid_1291";
-  int version = 0;
-  size_t strSize;
-  char *strVersion = NULL;
-  char *ptr;
-  char *strParts[3] = { NULL, NULL, NULL };
-  int i = 0, j = 0;
-  int factor = 10000;
-  PGresult *pgresult = NULL;
-
-  if ( ! pgconn ) {
-    msSetError(MS_QUERYERR, "No open connection.", "msPostGISRetrieveVersion()");
-    return;
-  }
-
-  pgresult = PQexec(pgconn, sql);
-
-  /*if ( !pgresult || PQresultStatus(pgresult) != PGRES_TUPLES_OK) {
-    msDebug("Error executing SQL: (%s) in msPostGISSetRole()", sql);
-    msSetError(MS_QUERYERR, "Error executing SQL. check server logs.", "msPostGISSetRole()");
-    return MS_FAILURE;
-  }
-
-  if (PQgetisnull(pgresult, 0, 0)) {
-    PQclear(pgresult);
-    msSetError(MS_QUERYERR,"Null result returned.","msPostGISRetrieveVersion()");
-    return MS_FAILURE;
-  }*/
 }
 
 /*

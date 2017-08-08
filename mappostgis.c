@@ -2512,7 +2512,7 @@ void msPostGISSetRole(PGconn *pgconn)
     return;
   }
 
-  pgresult = PQexec(pgconn, sql,0, NULL, NULL, NULL, NULL, 0);
+  pgresult = PQexec(pgconn, sql);
 
   /*if ( !pgresult || PQresultStatus(pgresult) != PGRES_TUPLES_OK) {
     msDebug("Error executing SQL: (%s) in msPostGISSetRole()", sql);

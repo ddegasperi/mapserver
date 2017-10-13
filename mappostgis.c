@@ -2331,9 +2331,6 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
   return MS_SUCCESS;
 }
 
-#endif /* USE_POSTGIS */
-
-#ifdef USE_POSTGIS
 /*
 ** Switch the database role
 */
@@ -2352,6 +2349,22 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
 }
+
+/*
+** Switch the database role
+*/
+void msPostGISResetRole(PGconn *pgconn)
+{
+  const char *sql = "RESET ROLE";
+  PGresult *pgresult = NULL;
+
+  if ( ! pgconn ) {
+    msSetError(MS_QUERYERR, "No open connection.", "msPostGISResetRole()");
+    return;
+  }
+
+  pgresult = PQexec(pgconn, sql);
+}
 #endif /* USE_POSTGIS */
 
 /*
@@ -2364,7 +2377,7 @@ int msPostGISLayerOpen(layerObj *layer)
 #ifdef USE_POSTGIS
   msPostGISLayerInfo  *layerinfo;
   int order_test = 1;
-  char *setrole_processing = NULL;
+  char *setrole_processing;
   const char* force2d_processing;
 
   assert(layer != NULL);
@@ -2492,6 +2505,8 @@ int msPostGISLayerOpen(layerObj *layer)
     if (layer->debug) {
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);
     }
+  } else {
+    msPostGISResetRole(layerinfo->pgconn);
   }
 
   force2d_processing = msLayerGetProcessingKey( layer, "FORCE2D" );

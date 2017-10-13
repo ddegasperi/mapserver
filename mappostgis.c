@@ -2347,7 +2347,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
     return;
   }
 
-  strcpy(sql, strRoleName)
+  strcpy(sql, strRoleName);
   pgresult = PQexec(pgconn, sql);
   free(sql);
 }

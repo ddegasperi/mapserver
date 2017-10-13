@@ -2487,7 +2487,7 @@ int msPostGISLayerOpen(layerObj *layer)
 
   setrole_processing = msLayerGetProcessingKey( layer, "SETROLE" );
   if(setrole_processing && *setrole_processing) {
-    msPostGISSetRole(layerinfo->pgconn, setrole_processing);
+    // msPostGISSetRole(layerinfo->pgconn, setrole_processing);
     if (layer->debug) {
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);
     }

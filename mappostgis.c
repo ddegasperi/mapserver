@@ -2340,14 +2340,15 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
 {
   static char *strSQLTemplate = "SET ROLE %s";
-  char *sql = NULL;
+  char *sql;
   PGresult *pgresult = NULL;
 
   if ( ! pgconn ) {
     msSetError(MS_QUERYERR, "No open connection.", "msPostGISSetRole()");
     return;
   }
-  
+
+  sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
   free(sql);

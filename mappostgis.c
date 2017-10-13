@@ -2365,7 +2365,7 @@ int msPostGISLayerOpen(layerObj *layer)
 #ifdef USE_POSTGIS
   msPostGISLayerInfo  *layerinfo;
   int order_test = 1;
-  const char* setrole_processing;
+  char *setrole_processing;
   const char* force2d_processing;
 
   assert(layer != NULL);

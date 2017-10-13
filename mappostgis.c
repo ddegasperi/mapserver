@@ -2336,7 +2336,7 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 /*
 ** Switch the database role
 */
-void msPostGISSetRole(PGconn *pgconn, char* strRoleName)
+void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
 {
   static char *strSQLTemplate = "SET ROLE %s";
   char *sql = NULL;

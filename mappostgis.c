@@ -2351,8 +2351,6 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
-  free(sql);
-  sql = NULL;
 }
 #endif /* USE_POSTGIS */
 
@@ -2489,7 +2487,7 @@ int msPostGISLayerOpen(layerObj *layer)
     msDebug("msPostGISLayerOpen: Got PostGIS version %d.\n", layerinfo->version);
 
   setrole_processing = msLayerGetProcessingKey( layer, "SETROLE" );
-  if(setrole_processing && *setrole_processing) {
+  if(setrole_processing) {
     msPostGISSetRole(layerinfo->pgconn, setrole_processing);
     if (layer->debug) {
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);

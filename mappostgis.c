@@ -2333,6 +2333,7 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 
 #endif /* USE_POSTGIS */
 
+#ifdef USE_POSTGIS
 /*
 ** Switch the database role
 */
@@ -2352,7 +2353,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   pgresult = PQexec(pgconn, sql);
   free(sql);
 }
-
+#endif /* USE_POSTGIS */
 
 /*
 ** msPostGISLayerOpen()

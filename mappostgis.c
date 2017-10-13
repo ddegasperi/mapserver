@@ -2363,7 +2363,7 @@ int msPostGISLayerOpen(layerObj *layer)
 #ifdef USE_POSTGIS
   msPostGISLayerInfo  *layerinfo;
   int order_test = 1;
-  char *setrole_processing = NULL;
+  const char* setrole_processing;
   const char* force2d_processing;
 
   assert(layer != NULL);
@@ -2492,7 +2492,6 @@ int msPostGISLayerOpen(layerObj *layer)
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);
     }
   }
-  free(setrole_processing);
 
   force2d_processing = msLayerGetProcessingKey( layer, "FORCE2D" );
   if(force2d_processing && !strcasecmp(force2d_processing,"no")) {

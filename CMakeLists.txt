@@ -318,9 +318,9 @@ add_executable(shptreetst shptreetst.c)
 target_link_libraries(shptreetst ${MAPSERVER_LIBMAPSERVER})
 
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
-  set(USE_EXTENDED_DEBUG 1)
-endif (CMAKE_BUILD_TYPE STREQUAL "Debug") 
+#if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
+set(USE_EXTENDED_DEBUG 1)
+#endif (CMAKE_BUILD_TYPE STREQUAL "Debug") 
 
 find_package(PNG)
 if(PNG_FOUND)

@@ -2342,16 +2342,14 @@ void msPostGISSetRole(PGconn *pgconn, char* strRoleName)
   char *sql = NULL;
   PGresult *pgresult = NULL;
 
-  sql = (char*) msSmallMalloc(strlen(strSQLTemplate) + strlen(strRoleName));
-  sprintf(sql, strSQLTemplate, strRoleName);
-
-  /*if ( ! pgconn ) {
+  if ( ! pgconn ) {
     msSetError(MS_QUERYERR, "No open connection.", "msPostGISSetRole()");
     return;
-  }*/
+  }
 
+  sql = (char*) msSmallMalloc(strlen(strSQLTemplate) + strlen(strRoleName));
+  sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
-
   free(sql);
 }
 

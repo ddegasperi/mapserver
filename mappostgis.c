@@ -2336,11 +2336,14 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 /*
 ** Switch the database role
 */
-void msPostGISSetRole(PGconn *pgconn, char* role_name)
+void msPostGISSetRole(PGconn *pgconn, char* strRoleName)
 {
-  const char* sql = "SET ROLE ";
+  static char *strSQLTemplate = "SET ROLE %s";
+  char *sql = NULL;
   PGresult *pgresult = NULL;
-  strcpy(sql, role_name);
+
+  sql = (char*) msSmallMalloc(strlen(strSQLTemplate) + strlen(strRoleName));
+  sprintf(sql, strSQLTemplate, strRoleName);
 
   /*if ( ! pgconn ) {
     msSetError(MS_QUERYERR, "No open connection.", "msPostGISSetRole()");
@@ -2348,6 +2351,8 @@ void msPostGISSetRole(PGconn *pgconn, char* role_name)
   }*/
 
   pgresult = PQexec(pgconn, sql);
+
+  free(sql);
 }
 
 
@@ -2361,7 +2366,7 @@ int msPostGISLayerOpen(layerObj *layer)
 #ifdef USE_POSTGIS
   msPostGISLayerInfo  *layerinfo;
   int order_test = 1;
-  /*const char* setrole_processing;*/
+  char *setrole_processing = NULL;
   const char* force2d_processing;
 
   assert(layer != NULL);
@@ -2483,13 +2488,14 @@ int msPostGISLayerOpen(layerObj *layer)
   if (layer->debug)
     msDebug("msPostGISLayerOpen: Got PostGIS version %d.\n", layerinfo->version);
 
-  /*setrole_processing = msLayerGetProcessingKey( layer, "SETROLE" );
+  setrole_processing = msLayerGetProcessingKey( layer, "SETROLE" );
   if(setrole_processing && *setrole_processing) {
     msPostGISSetRole(layerinfo->pgconn, setrole_processing);
     if (layer->debug) {
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);
     }
-  }*/
+  }
+  free(setrole_processing);
 
   force2d_processing = msLayerGetProcessingKey( layer, "FORCE2D" );
   if(force2d_processing && !strcasecmp(force2d_processing,"no")) {

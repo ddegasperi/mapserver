@@ -2352,6 +2352,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
   free(sql);
+  sql = NULL;
 }
 #endif /* USE_POSTGIS */
 

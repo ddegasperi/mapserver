@@ -2338,6 +2338,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
 {
   static char *strSQLTemplate = "SET ROLE milano_userid_1";
   // char *sql;
+  //char *sql;
   PGresult *pgresult = NULL;
 
   if ( ! pgconn ) {

@@ -2348,6 +2348,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
+  free(sql);
   PQclear(pgresult);
 }
 

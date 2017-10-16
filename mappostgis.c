@@ -2336,7 +2336,7 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 */
 void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
 {
-  static char *strSQLTemplate = "SET ROLE %s";
+  const char *strSQLTemplate = "SET ROLE %s";
   char *sql;
   PGresult *pgresult = NULL;
 
@@ -2348,8 +2348,8 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
-  free(sql);
   PQclear(pgresult);
+  free(sql);
 }
 
 /*

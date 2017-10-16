@@ -2344,6 +2344,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
     msSetError(MS_QUERYERR, "No open connection.", "msPostGISSetRole()");
     return;
   }
+  // 
 
   //sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
   //sprintf(sql, strSQLTemplate, strRoleName);

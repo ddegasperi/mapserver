@@ -2336,21 +2336,18 @@ int msPostGISReadShape(layerObj *layer, shapeObj *shape)
 */
 void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
 {
-  static char *strSQLTemplate = "SET ROLE milano_userid_1";
-  // char *sql;
-  //char *sql;
+  static char *strSQLTemplate = "SET ROLE %s";
+  char *sql;
   PGresult *pgresult = NULL;
 
   if ( ! pgconn ) {
     msSetError(MS_QUERYERR, "No open connection.", "msPostGISSetRole()");
     return;
   }
-  // 
 
-  //sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
-  //sprintf(sql, strSQLTemplate, strRoleName);
-  //pgresult = PQexec(pgconn, sql);
-  pgresult = PQexec(pgconn, strSQLTemplate);
+  sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
+  sprintf(sql, strSQLTemplate, strRoleName);
+  pgresult = PQexec(pgconn, sql);
 }
 
 /*
@@ -2508,6 +2505,7 @@ int msPostGISLayerOpen(layerObj *layer)
     if (layer->debug) {
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);
     }
+    free(setrole_processing);
   } else {
     msPostGISResetRole(layerinfo->pgconn);
   }

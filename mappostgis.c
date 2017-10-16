@@ -2348,6 +2348,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
   sprintf(sql, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
+  PQclear(pgresult);
 }
 
 /*
@@ -2364,6 +2365,7 @@ void msPostGISResetRole(PGconn *pgconn)
   }
 
   pgresult = PQexec(pgconn, sql);
+  PQclear(pgresult);
 }
 #endif /* USE_POSTGIS */
 
@@ -2505,7 +2507,6 @@ int msPostGISLayerOpen(layerObj *layer)
     if (layer->debug) {
       msDebug("msPostGISLayerOpen: set role to: %s.\n", setrole_processing);
     }
-    free(setrole_processing);
   } else {
     msPostGISResetRole(layerinfo->pgconn);
   }

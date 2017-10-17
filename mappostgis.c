@@ -2347,7 +2347,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
   }
 
   len = snprintf(NULL, 0, strSQLTemplate, strRoleName);
-  if (!(str = malloc((len + 1) * sizeof(char)))) {
+  if (!(sql = malloc((len + 1) * sizeof(char)))) {
     msSetError(MS_MEMERR, "Could not malloc for setrole.", "msPostGISSetRole()");
     return;
   }

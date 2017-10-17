@@ -2508,7 +2508,7 @@ int msPostGISLayerOpen(layerObj *layer)
   if (layer->debug)
     msDebug("msPostGISLayerOpen: Got PostGIS version %d.\n", layerinfo->version);
 
-  setrole_processing = msLayerGetProcessingKey( layer, "SETROLE" );
+  /*setrole_processing = msLayerGetProcessingKey( layer, "SETROLE" );
   if(setrole_processing) {
     msPostGISSetRole(layerinfo->pgconn, setrole_processing);
     if (layer->debug) {
@@ -2516,7 +2516,7 @@ int msPostGISLayerOpen(layerObj *layer)
     }
   } else {
     msPostGISResetRole(layerinfo->pgconn);
-  }
+  }*/
 
   force2d_processing = msLayerGetProcessingKey( layer, "FORCE2D" );
   if(force2d_processing && !strcasecmp(force2d_processing,"no")) {

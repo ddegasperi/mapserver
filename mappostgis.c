@@ -2338,6 +2338,7 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
 {
   const char *strSQLTemplate = "SET ROLE %s";
   char *sql;
+  int len;
   PGresult *pgresult = NULL;
 
   if ( ! pgconn ) {
@@ -2345,8 +2346,13 @@ void msPostGISSetRole(PGconn *pgconn, char *strRoleName)
     return;
   }
 
-  sql = (char *) malloc(strlen(strSQLTemplate) + strlen(strRoleName));
-  sprintf(sql, strSQLTemplate, strRoleName);
+  len = snprintf(NULL, 0, strSQLTemplate, strRoleName);
+  if (!(str = malloc((len + 1) * sizeof(char)))) {
+    msSetError(MS_MEMERR, "Could not malloc for setrole.", "msPostGISSetRole()");
+    return;
+  }
+
+  len = snprintf(sql, len + 1, strSQLTemplate, strRoleName);
   pgresult = PQexec(pgconn, sql);
   PQclear(pgresult);
   free(sql);
